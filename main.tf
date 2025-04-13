@@ -95,26 +95,12 @@ resource "aws_security_group" "public_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
     from_port   = 80
     to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 3001
-    to_port     = 3001
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -131,22 +117,62 @@ resource "aws_security_group" "public_sg" {
   }
 }
 
+resource "aws_security_group_rule" "allow_3000" {
+  type              = "ingress"
+  from_port         = 3000
+  to_port           = 3000
+  protocol          = "tcp"
+  security_group_id = aws_security_group.public_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "allow_3001" {
+  type              = "ingress"
+  from_port         = 3001
+  to_port           = 3001
+  protocol          = "tcp"
+  security_group_id = aws_security_group.public_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "allow_8001" {
+  type              = "ingress"
+  from_port         = 8001
+  to_port           = 8001
+  protocol          = "tcp"
+  security_group_id = aws_security_group.public_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "allow_9090" {
+  type              = "ingress"
+  from_port         = 9090
+  to_port           = 9090
+  protocol          = "tcp"
+  security_group_id = aws_security_group.public_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "allow_9100" {
+  type              = "ingress"
+  from_port         = 9100
+  to_port           = 9100
+  protocol          = "tcp"
+  security_group_id = aws_security_group.public_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "public_to_private_mongo" {
+  type                     = "ingress"
+  from_port                = 27017
+  to_port                  = 27017
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.public_sg.id
+  source_security_group_id = aws_security_group.private_sg.id
+}
+
 resource "aws_security_group" "private_sg" {
   vpc_id = aws_vpc.main.id
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.public_sg.id] # Allow SSH from public instance
-  }
-
-  ingress {
-    from_port       = 27017
-    to_port         = 27017
-    protocol        = "tcp"
-    security_groups = [aws_security_group.public_sg.id] # Allow traffic from web-server
-  }
 
   egress {
     from_port   = 0
@@ -158,6 +184,33 @@ resource "aws_security_group" "private_sg" {
   tags = {
     Name = "private-security-group"
   }
+}
+
+resource "aws_security_group_rule" "private_ssh" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.private_sg.id
+  source_security_group_id = aws_security_group.public_sg.id
+}
+
+resource "aws_security_group_rule" "private_mongo" {
+  type                     = "ingress"
+  from_port                = 27017
+  to_port                  = 27017
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.private_sg.id
+  source_security_group_id = aws_security_group.public_sg.id
+}
+
+resource "aws_security_group_rule" "private_node_exporter" {
+  type                     = "ingress"
+  from_port                = 9100
+  to_port                  = 9100
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.private_sg.id
+  source_security_group_id = aws_security_group.public_sg.id
 }
 
 # IAM Role and Policy
