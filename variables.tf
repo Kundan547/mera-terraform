@@ -31,13 +31,13 @@ variable "availability_zone" {
 # Specify the AMI ID
 variable "ami_id" {
   description = "The AMI ID for the EC2 Instances"
-  default     = "ami-12345"
+  default     = "ami-04f167a56786e4b09"
 }
 
 # Define the EC2 Instance Type
 variable "instance_type" {
   description = "The type of instance to launch"
-  default     = "t2.micro"
+  default     = "t2.medium"
 }
 
 # Specify the EC2 Key Pair Name
